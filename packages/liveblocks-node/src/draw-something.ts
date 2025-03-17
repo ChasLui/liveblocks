@@ -163,6 +163,15 @@ await liveblocks.massMutateStorage(
       const y = Math.floor(rnd / 16);
       const coord = `0_${y}_${x}`;
       grid.set(coord, getPixelAt(pixels, x, y, 16));
+
+      // Slowly draw pixels by waiting 5ms after setting each pixel
+      await wait(5);
     }
+  },
+
+  {
+    concurrency: 20, // Mutate 20 rooms in parallel
+    flushInterval: 200, // Flush slow paints up to 5 times per second
+    signal: AbortSignal.timeout(5_000), // Total time taken for all mutations cannot be more than 5s
   }
 );
