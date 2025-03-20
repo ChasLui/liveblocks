@@ -358,17 +358,28 @@
         "summary": "Delete room",
         "tags": ["Room"],
         "responses": {
-          "204": {
-            "description": "Success. The room was deleted"
+          "200": {
+            "description": "Success. Returns whether the room was deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteRoomResponse"
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "deleted": true
+                    }
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/401"
           },
           "403": {
             "$ref": "#/components/responses/403"
-          },
-          "404": {
-            "$ref": "#/components/responses/404"
           },
           "422": {
             "$ref": "#/components/responses/422"
@@ -3440,6 +3451,13 @@
               }
             }
           }
+        }
+      },
+      "DeleteRoomResponse": {
+        "title": "DeleteRoomResponse",
+        "type": "object",
+        "properties": {
+          "deleted": { "type": "boolean" }
         }
       },
       "PublicAuthorizeBodyRequest": {
