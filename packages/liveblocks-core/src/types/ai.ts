@@ -1,5 +1,6 @@
 import { assertNever } from "../lib/assert";
 import type { JsonObject } from "../lib/Json";
+import type { Relax } from "../lib/Relax";
 import type { Resolve } from "../lib/Resolve";
 import type { Brand } from "../lib/utils";
 
@@ -299,33 +300,56 @@ export type AiUserMessage = {
   id: MessageId;
   chatId: ChatId;
   role: "user";
-  content: AiUserContentPart[];
   createdAt: ISODateString;
   deletedAt?: ISODateString;
+  content: AiUserContentPart[];
 };
 
-export type AiAssistantMessage = {
+export type AiAssistantMessage = Relax<
+  | AiPendingAssistantMessage
+  | AiFailedAssistantMessage
+  | AiCompletedAssistantMessage
+>;
+
+export type AiPendingAssistantMessage = {
+  // Common fields on all 'assistant' messages
   id: MessageId;
   chatId: ChatId;
   role: "assistant";
-  content: AiAssistantContentPart[];
   createdAt: ISODateString;
   deletedAt?: ISODateString;
+  // Specific to 'pending' assistant messages
+  status: "pending";
+  contentSoFar: AiAssistantContentPart[];
+  placeholderId: PlaceholderId;
 };
 
-export type AiAssistantPlaceholderMessage = {
+export type AiFailedAssistantMessage = {
+  // Common fields on all 'assistant' messages
   id: MessageId;
   chatId: ChatId;
-  role: "assistant-placeholder";
-  placeholderId: PlaceholderId;
+  role: "assistant";
   createdAt: ISODateString;
   deletedAt?: ISODateString;
+  // Specific to 'failed' assistant messages
+  status: "failed";
+  contentSoFar: AiAssistantContentPart[];
+  errorReason: string;
 };
 
-export type AiChatMessage =
-  | AiUserMessage
-  | AiAssistantMessage
-  | AiAssistantPlaceholderMessage;
+export type AiCompletedAssistantMessage = {
+  // Common fields on all 'assistant' messages
+  id: MessageId;
+  chatId: ChatId;
+  role: "assistant";
+  createdAt: ISODateString;
+  deletedAt?: ISODateString;
+  // Specific to 'completed' assistant messages
+  status: "completed";
+  content: AiAssistantContentPart[];
+};
+
+export type AiChatMessage = AiUserMessage | AiAssistantMessage;
 
 export type CopilotContext = {
   value: string;

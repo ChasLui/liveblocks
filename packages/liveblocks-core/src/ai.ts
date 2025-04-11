@@ -26,6 +26,7 @@ import type {
   AiAssistantDeltaUpdate,
   AiChat,
   AiChatMessage,
+  AiPendingAssistantMessage,
   AiToolDefinition,
   AiUserContentPart,
   AiUserMessage,
@@ -766,14 +767,15 @@ export function createAi(config: AiConfig): Ai {
         const stream = options?.stream ?? false;
         const timeout = options?.timeout ?? DEFAULT_AI_TIMEOUT;
 
-        // @nimesh - This is subject to change - I wired it up without much thinking for demo purpose.
         context.messages.upsert({
           id: output.messageId,
-          role: "assistant-placeholder",
-          placeholderId,
           chatId: input.chatId,
+          role: "assistant",
           createdAt: new Date().toISOString() as ISODateString,
-        });
+          status: "pending",
+          placeholderId,
+          contentSoFar: [],
+        } satisfies AiPendingAssistantMessage);
 
         const chatContext = context.contextByChatId.get(input.chatId);
         const chatTools = context.toolsByChatId.get(input.chatId);
