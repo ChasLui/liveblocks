@@ -654,6 +654,22 @@
           {
             "title": "Manage team members",
             "path": "/platform/account-management/manage-team-members"
+          },
+          {
+            "title": "SAML Single Sign-on",
+            "path": "/platform/account-management/saml"
+          },
+          {
+            "title": "Directory sync",
+            "path": "/platform/account-management/directory-sync"
+          },
+          {
+            "title": "Multi-factor authentication",
+            "path": "/platform/account-management/mfa"
+          },
+          {
+            "title": "Delete an account",
+            "path": "/platform/account-management/delete-an-account"
           }
         ]
       },
