@@ -1,4 +1,5 @@
 export type { ComposerBodyMark, ComposerBodyMarks } from "../types";
+export type { AiComposerSubmitMessage } from "./AiComposer/types";
 export * as Comment from "./Comment";
 export type {
   CommentBodyComponents,
@@ -31,6 +32,8 @@ export type {
   ComposerSuggestionsListProps,
 } from "./Composer/types";
 export { AttachmentTooLargeError } from "./Composer/utils";
+export type { DurationProps } from "./Duration";
+export { Duration } from "./Duration";
 export type { FileSizeProps } from "./FileSize";
 export { FileSize } from "./FileSize";
 export type { TimestampProps } from "./Timestamp";

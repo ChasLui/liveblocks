@@ -1,12 +1,20 @@
 "use client";
 
-import { assertNever } from "@liveblocks/core";
+import {
+  type AiReasoningPart,
+  type AiRetrievalPart,
+  assertNever,
+} from "@liveblocks/core";
 import type { PropsWithChildren, ReactNode } from "react";
 import { createContext, useContext, useMemo } from "react";
 
 import { Emoji } from "./components/internal/Emoji";
+import { Duration } from "./primitives/Duration";
 import type { ComposerBodyMark, Direction } from "./types";
 import { pluralize } from "./utils/pluralize";
+
+// TODO: Move overrides to single-argument-as-object with Liveblocks 4.0,
+//       it didn't make the cut for 3.0 but we should do it next time.
 
 export interface LocalizationOverrides {
   locale: string;
@@ -62,16 +70,23 @@ export interface AiToolConfirmationOverrides {
   AI_TOOL_CONFIRMATION_CANCEL: string;
 }
 
-export interface AiChatComposerOverrides {
-  AI_CHAT_COMPOSER_PLACEHOLDER: string;
-  AI_CHAT_COMPOSER_SEND: string;
-  AI_CHAT_COMPOSER_ABORT: string;
+export interface AiComposerOverrides {
+  AI_COMPOSER_PLACEHOLDER: string;
+  AI_COMPOSER_SEND: string;
+  AI_COMPOSER_ABORT: string;
 }
 
 export interface AiChatMessageOverrides {
   AI_CHAT_MESSAGE_DELETED: string;
-  AI_CHAT_MESSAGE_THINKING: string;
-  AI_CHAT_MESSAGE_REASONING: (isStreaming: boolean) => string;
+  AI_CHAT_MESSAGE_THINKING: ReactNode;
+  AI_CHAT_MESSAGE_REASONING: (
+    isStreaming: boolean,
+    part: AiReasoningPart
+  ) => ReactNode;
+  AI_CHAT_MESSAGE_RETRIEVAL: (
+    isStreaming: boolean,
+    part: AiRetrievalPart
+  ) => ReactNode;
 }
 
 export interface AiChatOverrides {
@@ -85,6 +100,7 @@ export interface ThreadOverrides {
   THREAD_UNSUBSCRIBE: string;
   THREAD_NEW_INDICATOR: string;
   THREAD_NEW_INDICATOR_DESCRIPTION: string;
+  THREAD_SHOW_MORE_COMMENTS: (count: number) => string;
   THREAD_COMPOSER_PLACEHOLDER: string;
   THREAD_COMPOSER_SEND: string;
 }
@@ -122,7 +138,7 @@ export type Overrides = LocalizationOverrides &
   ThreadOverrides &
   InboxNotificationOverrides &
   HistoryVersionPreviewOverrides &
-  AiChatComposerOverrides &
+  AiComposerOverrides &
   AiChatMessageOverrides &
   AiChatOverrides &
   AiToolConfirmationOverrides;
@@ -192,6 +208,8 @@ export const defaultOverrides: Overrides = {
   THREAD_UNSUBSCRIBE: "Unsubscribe from thread",
   THREAD_NEW_INDICATOR: "New",
   THREAD_NEW_INDICATOR_DESCRIPTION: "New comments",
+  THREAD_SHOW_MORE_COMMENTS: (count) =>
+    `Show ${count} more ${pluralize(count, "reply", "replies")}`,
   THREAD_COMPOSER_PLACEHOLDER: "Reply to thread…",
   THREAD_COMPOSER_SEND: "Reply",
   INBOX_NOTIFICATION_MORE: "More",
@@ -223,13 +241,43 @@ export const defaultOverrides: Overrides = {
   HISTORY_VERSION_PREVIEW_EMPTY: "No content.",
   HISTORY_VERSION_PREVIEW_ERROR: () =>
     "There was an error while getting this version.",
-  AI_CHAT_COMPOSER_PLACEHOLDER: "Ask anything…",
-  AI_CHAT_COMPOSER_SEND: "Send",
-  AI_CHAT_COMPOSER_ABORT: "Abort response",
+  AI_COMPOSER_PLACEHOLDER: "Ask anything…",
+  AI_COMPOSER_SEND: "Send",
+  AI_COMPOSER_ABORT: "Abort response",
   AI_CHAT_MESSAGE_DELETED: "This message has been deleted.",
   AI_CHAT_MESSAGE_THINKING: "Thinking…",
-  AI_CHAT_MESSAGE_REASONING: (isStreaming) =>
-    isStreaming ? "Reasoning…" : "Reasoning",
+  AI_CHAT_MESSAGE_REASONING: (isStreaming: boolean, part: AiReasoningPart) =>
+    isStreaming ? (
+      <>Reasoning…</>
+    ) : (
+      <>
+        Reasoned for{" "}
+        <Duration
+          className="lb-duration lb-ai-chat-message-reasoning-duration"
+          from={part.startedAt}
+          to={part.endedAt}
+        />
+      </>
+    ),
+  AI_CHAT_MESSAGE_RETRIEVAL: (isStreaming: boolean, part: AiRetrievalPart) =>
+    isStreaming ? (
+      <>
+        Searching{" "}
+        <span className="lb-ai-chat-message-retrieval-query">{part.query}</span>
+        …
+      </>
+    ) : (
+      <>
+        Searched{" "}
+        <span className="lb-ai-chat-message-retrieval-query">{part.query}</span>{" "}
+        for{" "}
+        <Duration
+          className="lb-duration lb-ai-chat-message-retrieval-duration"
+          from={part.startedAt}
+          to={part.endedAt}
+        />
+      </>
+    ),
   AI_CHAT_MESSAGES_ERROR: () =>
     "There was an error while getting the messages.",
   AI_TOOL_CONFIRMATION_CONFIRM: "Confirm",

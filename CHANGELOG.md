@@ -1,5 +1,193 @@
 ## vNEXT (not yet published)
 
+## v3.6.0
+
+### `@liveblocks/client`
+
+- Auto-abort this client's tool calls on page unload to prevent hanging chats.
+
+### `@liveblocks/react-ui`
+
+- Reasoning in `AiChat` now displays how long it took.
+- `AiChat` nows shows when a copilot is searching its knowledge defined on the
+  dashboard, as a "Searching 'What is RAG?'…" indicator. It also displays how
+  long it took.
+- Add `Duration` primitive to display formatted durations, similar to the
+  existing `Timestamp` primitive.
+
+### `@liveblocks/node`
+
+- Better type safety for copilot creation and update options.
+- Add missing type export for AI Copilot and knowledge sources.
+
+## v3.5.4
+
+- Identical to v3.5.2, corrects a bad release.
+
+## v3.5.3
+
+- Bad release, please use v3.5.4 instead.
+
+## v3.5.2
+
+### `@liveblocks/client`
+
+- Throttle incoming AI delta updates to prevent excessive re-renders during fast
+  streaming.
+- Optimized partial JSON parser for improved tool invocation streaming
+  performance.
+
+### `@liveblocks/react-tiptap`
+
+- Fixes a bug where the a comment could not be selected if it was within a
+  previously deleted comment.
+
+## v3.5.1
+
+### `@liveblocks/react-tiptap`
+
+- Fixes a bug where deleting a thread/comment from Tiptap would also remove any
+  comments contained within it.
+
+## v3.5.0
+
+### `@liveblocks/node`
+
+- Add the following methods for managing AI copilots and knowledge sources:
+  - `getAiCopilots`
+  - `createAiCopilot`
+  - `getAiCopilot`
+  - `updateAiCopilot`
+  - `deleteAiCopilot`
+  - `createWebKnowledgeSource`
+  - `createFileKnowledgeSource`
+  - `deleteFileKnowledgeSource`
+  - `deleteWebKnowledgeSource`
+  - `getKnowledgeSources`
+  - `getKnowledgeSource`
+  - `getFileKnowledgeSourceMarkdown`
+  - `getWebKnowledgeSourceLinks`
+
+## v3.4.2
+
+### `@liveblocks/react-ui`
+
+- Fix improved Markdown streaming in `AiChat` only being enabled in reasoning
+  blocks, it’s now enabled for all Markdown.
+
+## v3.4.1
+
+### `@liveblocks/client`
+
+- Fix a bug where copilot id wasn't passed when setting tool call result if a
+  tool call was defined with `execute` callback.
+
+### `@liveblocks/react`
+
+- Update `useSendAiMessage` to use the the last used copilot id in a chat when
+  no copilot id is passed to the hook or the method returned by the hook.
+
+## v3.4.0
+
+### `@liveblocks/react`
+
+Tool calls will now stream in while under construction. This means that tools
+will render sooner and more often re-render, while `partialArgs` are streaming
+in.
+
+> New behavior (>=3.4):
+>
+> - 1st render: `{ stage: "receiving", partialArgs: {} }`
+> - 2nd render: `{ stage: "receiving", partialArgs: { cities: [] } }`
+> - 3rd render: `{ stage: "receiving", partialArgs: { cities: [""] } }`
+> - 4th render: `{ stage: "receiving", partialArgs: { cities: ["Pa"] } }`
+> - 5th render: `{ stage: "receiving", partialArgs: { cities: ["Paris"] } }`
+> - etc.
+> - Then `{ stage: "executing", args: { cities: "Paris" } }` (same as before)
+> - And `{ stage: "executed", args, result }` (same as before)
+>
+> Before (<3.4):
+>
+> - Stage "receiving" would never happen
+> - 1st render would be with
+>   `{ stage: "executing", args: { cities: ["Paris"] } }`
+> - 2nd render would be with `{ stage: "executed", args, result }`
+
+#### Other changes
+
+- In `RoomProvider`, `initialPresence` and `initialStorage` now get re-evaluated
+  whenever the room ID (the `id` prop) changes.
+
+### `@liveblocks/react-ui`
+
+- Add a minimal appearance to `AiTool` via a new `variant` prop.
+- Improve Markdown rendering during streaming in `AiChat`: incomplete content is
+  now handled gracefully so things like bold, links, or tables all render
+  instantly without seeing partial Markdown syntax first.
+- Render all messages in `AiChat` as Markdown, including ones from the user.
+- Fix Markdown rendering of HTML tags in `AiChat`. (e.g. "Use the `<AiChat />`
+  component" would render as "Use the `` component")
+- Improve shimmer animation visible on elements like the
+  "Thinking…"/"Reasoning…" placeholders in `AiChat`.
+
+## v3.3.4
+
+### `@liveblocks/client`
+
+- Fix race condition where AI tools were not always executing. This could happen
+  when using `useSendAiMessage` first and then immediately opening the
+  `<AiChat />` afterwards.
+
+### `@liveblocks/react-tiptap`
+
+- Scroll thread annotations into view when a thread in `AnchoredThreads` is
+  selected, similarly to `@liveblocks/react-lexical`.
+
+## v3.3.1
+
+### `@liveblocks/react-ui`
+
+- Fix `Composer` uploading attachments on drop when `showAttachments` is set to
+  `false`.
+
+## v3.3.0
+
+### `@liveblocks/react-ui`
+
+- Add `maxVisibleComments` prop to `Thread` to control the maximum number of
+  comments to show. When comments are hidden, a "Show more replies" button is
+  shown to allow users to expand the thread.
+- Add `onComposerSubmit` callback to `AiChat` triggered when a new message is
+  sent. It can also be used to customize message submission by calling
+  `useSendAiMessage` yourself.
+- Overrides and CSS classes for `AiChat`'s composer have been renamed:
+  - Overrides: `AI_CHAT_COMPOSER_SEND` → `AI_COMPOSER_PLACEHOLDER`
+  - CSS classes: `.lb-ai-chat-composer-form` → `.lb-ai-composer-form`
+- Fix: knowledge passed as a prop to `AiChat` no longer leaks that knowledge to
+  other instances of `AiChat` that are currently mounted on screen.
+
+### `@liveblocks/react`
+
+- Add `query` option to `useAiChats` to filter the current user’s AI chats by
+  metadata. Supports exact matches for string values, "contains all" for string
+  arrays, and filtering by absence using `null` (e.g.
+  `{ metadata: { archived: null } }`).
+- `useSendAiMessage` now accepts passing the chat ID and/or options to the
+  function rather than the hook. This can be useful in dynamic scenarios where
+  the chat ID might not be known when calling the hook for example.
+- `useCreateAiChat` now accepts a chat ID as a string instead of
+  `{ id: "chat-id" }`.
+
+### `@liveblocks/react-tiptap` and `@liveblocks/react-lexical`
+
+- Allow using custom composers in `FloatingComposer` via the
+  `components={{ Composer }}` prop.
+
+### `@liveblocks/react-lexical`
+
+- Add `ATTACH_THREAD_COMMAND` command to manually create a thread attached to
+  the current selection.
+
 ## v3.2.1
 
 ### `@liveblocks/react-ui`

@@ -3,6 +3,8 @@ import type { Json } from "./Json";
 declare const brand: unique symbol;
 export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
 
+export type ISODateString = Brand<string, "ISODateString">;
+
 export type DistributiveOmit<T, K extends PropertyKey> = T extends any
   ? Omit<T, K>
   : never;
@@ -10,6 +12,12 @@ export type DistributiveOmit<T, K extends PropertyKey> = T extends any
 // export type DistributivePick<T, K extends keyof T> = T extends any
 //   ? Pick<T, K>
 //   : never;
+
+export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };
+
+export type WithOptional<T, K extends keyof T> = Omit<T, K> & {
+  [P in K]?: T[P];
+};
 
 /**
  * Throw an error, but as an expression instead of a statement.
@@ -239,4 +247,23 @@ export function memoizeOnSuccess<T>(
     }
     return cached;
   };
+}
+
+/**
+ * Polyfill for Array.prototype.findLastIndex()
+ */
+export function findLastIndex<T>(
+  arr: T[],
+  predicate: (value: T, index: number, obj: T[]) => boolean
+): number {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (predicate(arr[i], i, arr)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+export function iso(s: string): ISODateString {
+  return new Date(s).toISOString() as ISODateString;
 }
